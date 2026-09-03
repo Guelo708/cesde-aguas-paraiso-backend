@@ -33,8 +33,18 @@ public class Usuario extends BaseEntity {
     @Column(length = 20)
     private String celular;
 
-    // Relación con Predios
+    // Relación con Predios (OneToMany)
     @OneToMany(mappedBy = "propietario")
     private List<Predio> predios;
+
+    // Relación con Sectores (ManyToMany)
+    @ManyToMany
+    @JoinTable(
+        name = "usuario_sector",
+        joinColumns = @JoinColumn(name = "usuario_id"),
+        inverseJoinColumns = @JoinColumn(name = "sector_id")
+    )
+    private List<Sector> sectores;
 }
+
 
