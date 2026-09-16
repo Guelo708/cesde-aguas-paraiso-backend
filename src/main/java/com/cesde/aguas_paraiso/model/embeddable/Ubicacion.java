@@ -10,8 +10,14 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Ubicacion {
-    private String direccion;
-    private String barrio;
-    private String ciudad;
-}
 
+    private String nombrePredio;
+
+    private String vereda;
+
+    private String corregimiento;
+
+    private String municipio;
+
+    private String observaciones;
+}
