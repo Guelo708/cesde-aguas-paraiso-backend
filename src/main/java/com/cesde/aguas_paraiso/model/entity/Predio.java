@@ -18,11 +18,17 @@ public class Predio extends BaseEntity {
     private String codigoPredio;
 
     @Embedded
-    private Ubicacion ubicacion; // Clase embebida
+    private Ubicacion ubicacion;
 
-    // Relación con Usuario
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario propietario;
-}
 
+    @ManyToOne
+    @JoinColumn(name = "sector_id", nullable = false)
+    private Sector sector;
+
+    @ManyToOne
+    @JoinColumn(name = "tipo_predio_id", nullable = false)
+    private TipoPredio tipoPredio;
+}

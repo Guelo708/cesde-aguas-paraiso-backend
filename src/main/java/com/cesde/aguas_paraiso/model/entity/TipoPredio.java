@@ -7,13 +7,13 @@ import jakarta.persistence.Table;
 import lombok.*;
 
 @Entity
-@Table(name = "sectores")
+@Table(name = "tipos_predios")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Sector extends BaseEntity {
+public class TipoPredio extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 50)
     private String nombre;
