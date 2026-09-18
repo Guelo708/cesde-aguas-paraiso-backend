@@ -36,7 +36,7 @@ public class Factura extends BaseEntity {
 
     @Column(nullable = false)
     private LocalDate fechaGeneracion;
-
+D
     @Column(nullable = false)
     private LocalDate fechaVencimiento;
 
