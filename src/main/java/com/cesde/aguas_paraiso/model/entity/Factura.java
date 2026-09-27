@@ -7,9 +7,17 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "facturas")
+@Table(
+    name = "facturas",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_factura_predio_periodo",
+        columnNames = {"predio_id", "mes", "anio"}
+    )
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,6 +32,10 @@ public class Factura extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "tarifa_id", nullable = false)
     private Tarifa tarifaAplicada;
+
+    @OneToMany(mappedBy = "factura")
+    @Builder.Default
+    private List<Pago> pagos = new ArrayList<>();
 
     @Column(nullable = false)
     private Integer mes;
@@ -41,6 +53,6 @@ public class Factura extends BaseEntity {
     private LocalDate fechaVencimiento;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private EstadoFactura estado;
 }
