@@ -33,8 +33,9 @@ public class Usuario extends BaseEntity {
     @Column(length = 20)
     private String celular;
 
+    @Column(name = "correo_electronico", unique = true, length = 100)
+    private String correoElectronico;
+
     @OneToMany(mappedBy = "propietario")
     private List<Predio> predios;
 }
-
-
