@@ -6,14 +6,30 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface PagoRepository extends JpaRepository<Pago, Long> {
 
-    List<Pago> findByFacturaIdOrderByFechaPagoDesc(Long facturaId);
+    List<Pago> findByFacturaIdOrderByFechaPagoDesc(
+            Long facturaId
+    );
 
-    List<Pago> findByFacturaPredioPropietarioIdOrderByFechaPagoDesc(
+    List<Pago>
+    findByFacturaPredioPropietarioIdOrderByFechaPagoDesc(
             Long usuarioId
+    );
+
+    List<Pago>
+    findByFacturaCedulaPropietarioOrderByFechaPagoDesc(
+            String cedulaPropietario
+    );
+
+    List<Pago>
+    findByFacturaCedulaPropietarioAndFechaPagoBetweenOrderByFechaPagoDesc(
+            String cedulaPropietario,
+            LocalDate fechaInicial,
+            LocalDate fechaFinal
     );
 
     @Query("""
@@ -32,5 +48,14 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     """)
     BigDecimal sumarPagosPorUsuario(
             @Param("usuarioId") Long usuarioId
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(p.valorPagado), 0)
+        FROM Pago p
+        WHERE p.factura.cedulaPropietario = :cedula
+    """)
+    BigDecimal sumarPagosPorCedula(
+            @Param("cedula") String cedula
     );
 }

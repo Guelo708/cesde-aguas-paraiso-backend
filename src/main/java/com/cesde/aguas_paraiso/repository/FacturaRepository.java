@@ -27,8 +27,19 @@ public interface FacturaRepository
             Long predioId
     );
 
-    List<Factura> findByPredioPropietarioIdOrderByAnioDescMesDesc(
+    List<Factura>
+    findByPredioPropietarioIdOrderByAnioDescMesDesc(
             Long usuarioId
+    );
+
+    List<Factura> findByCedulaPropietarioOrderByAnioDescMesDesc(
+            String cedulaPropietario
+    );
+
+    List<Factura>
+    findByCedulaPropietarioAndEstadoOrderByAnioDescMesDesc(
+            String cedulaPropietario,
+            EstadoFactura estado
     );
 
     List<Factura> findByPredioPropietarioIdAndEstado(
@@ -41,8 +52,28 @@ public interface FacturaRepository
             EstadoFactura estado
     );
 
+    long countByCedulaPropietarioAndEstado(
+            String cedulaPropietario,
+            EstadoFactura estado
+    );
+
     List<Factura> findByFechaVencimientoBeforeAndEstadoNot(
             LocalDate fecha,
             EstadoFactura estado
     );
+
+    List<Factura>
+findByCedulaPropietarioAndFechaGeneracionBetweenOrderByFechaGeneracionDesc(
+        String cedulaPropietario,
+        LocalDate fechaInicial,
+        LocalDate fechaFinal
+);
+
+List<Factura>
+findByCedulaPropietarioAndEstadoAndFechaGeneracionBetweenOrderByFechaGeneracionDesc(
+        String cedulaPropietario,
+        EstadoFactura estado,
+        LocalDate fechaInicial,
+        LocalDate fechaFinal
+);
 }

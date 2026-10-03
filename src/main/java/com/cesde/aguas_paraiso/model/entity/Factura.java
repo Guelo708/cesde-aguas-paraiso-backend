@@ -12,11 +12,11 @@ import java.util.List;
 
 @Entity
 @Table(
-    name = "facturas",
-    uniqueConstraints = @UniqueConstraint(
-        name = "uk_factura_predio_periodo",
-        columnNames = {"predio_id", "mes", "anio"}
-    )
+        name = "facturas",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_factura_predio_periodo",
+                columnNames = {"predio_id", "mes", "anio"}
+        )
 )
 @Getter
 @Setter
@@ -37,13 +37,31 @@ public class Factura extends BaseEntity {
     @Builder.Default
     private List<Pago> pagos = new ArrayList<>();
 
+    @Column(
+            name = "cedula_propietario",
+            nullable = false,
+            length = 15
+    )
+    private String cedulaPropietario;
+
+    @Column(
+            name = "nombre_propietario",
+            nullable = false,
+            length = 200
+    )
+    private String nombrePropietario;
+
     @Column(nullable = false)
     private Integer mes;
 
     @Column(nullable = false)
     private Integer anio;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
     private BigDecimal valorFactura;
 
     @Column(nullable = false)
