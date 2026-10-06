@@ -3,6 +3,7 @@ package com.cesde.aguas_paraiso.model.entity;
 import com.cesde.aguas_paraiso.model.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class Usuario extends BaseEntity {
     @Column(name = "correo_electronico", unique = true, length = 100)
     private String correoElectronico;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "propietario")
     private List<Predio> predios;
 }
