@@ -2,6 +2,7 @@ package com.cesde.aguas_paraiso.model.entity;
 
 import com.cesde.aguas_paraiso.model.base.BaseEntity;
 import com.cesde.aguas_paraiso.model.enums.MetodoPago;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 @Builder
 public class Pago extends BaseEntity {
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "factura_id", nullable = false)
     private Factura factura;
