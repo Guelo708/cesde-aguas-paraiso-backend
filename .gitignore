@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Variables de entorno y credenciales
+.env
+
+# Registros de errores de la JVM
+hs_err_pid*.log
