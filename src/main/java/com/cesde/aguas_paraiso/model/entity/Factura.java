@@ -2,6 +2,8 @@ package com.cesde.aguas_paraiso.model.entity;
 
 import com.cesde.aguas_paraiso.model.base.BaseEntity;
 import com.cesde.aguas_paraiso.model.enums.EstadoFactura;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,6 +35,7 @@ public class Factura extends BaseEntity {
     @JoinColumn(name = "tarifa_id", nullable = false)
     private Tarifa tarifaAplicada;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "factura")
     @Builder.Default
     private List<Pago> pagos = new ArrayList<>();
