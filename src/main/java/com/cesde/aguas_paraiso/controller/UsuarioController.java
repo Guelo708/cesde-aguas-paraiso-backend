@@ -1,221 +1,162 @@
 package com.cesde.aguas_paraiso.controller;
 
-import com.cesde.aguas_paraiso.model.entity.Usuario;
+import com.cesde.aguas_paraiso.dto.UsuarioRequestDTO;
+import com.cesde.aguas_paraiso.dto.UsuarioResponseDTO;
 import com.cesde.aguas_paraiso.service.UsuarioService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * Controlador REST encargado de recibir las solicitudes HTTP
- * relacionadas con los usuarios del Acueducto Aguas Paraíso.
- *
- * Este controlador permite realizar operaciones CRUD:
- *
- * - Listar usuarios.
- * - Buscar usuarios por ID.
- * - Buscar usuarios por cédula.
- * - Buscar usuarios por correo electrónico.
- * - Registrar usuarios.
- * - Actualizar usuarios.
- * - Eliminar usuarios.
- *
- * El controlador no contiene las reglas del negocio.
- * Las validaciones de cédula, correo electrónico y existencia
- * del usuario se delegan a UsuarioService.
- */
 @RestController
 @RequestMapping("/api/usuarios")
-@Tag(name = "1. Usuarios", description = "Operaciones CRUD y consultas personalizadas de usuarios")
+@Tag(
+        name = "1. Usuarios",
+        description = "Operaciones CRUD y consultas personalizadas de usuarios"
+)
 public class UsuarioController {
 
-    /**
-     * Servicio que contiene la lógica del negocio
-     * relacionada con los usuarios.
-     *
-     * Se declara final porque la dependencia se asigna
-     * una sola vez mediante el constructor.
-     */
     private final UsuarioService usuarioService;
 
-    /**
-     * Constructor utilizado por Spring para inyectar
-     * automáticamente una instancia de UsuarioService.
-     *
-     * @param usuarioService servicio encargado de administrar
-     *                       la lógica de los usuarios
-     */
     public UsuarioController(
-            UsuarioService usuarioService) {
+            UsuarioService usuarioService
+    ) {
         this.usuarioService = usuarioService;
     }
 
-    /**
-     * Obtiene todos los usuarios registrados en el sistema.
-     *
-     * Ruta:
-     * GET /api/usuarios
-     *
-     * @return respuesta HTTP 200 con la lista de usuarios
+    /*
+     * Lista todos los usuarios.
      */
     @GetMapping
-    @Operation(summary = "Listar todos los usuarios", description = "Consulta todos los usuarios registrados en la base de datos")
-    public ResponseEntity<List<Usuario>> listarTodos() {
-
-        List<Usuario> usuarios = usuarioService.listarTodos();
+    @Operation(
+            summary = "Listar todos los usuarios",
+            description = "Consulta todos los usuarios registrados"
+    )
+    public ResponseEntity<List<UsuarioResponseDTO>> listarTodos() {
+        List<UsuarioResponseDTO> usuarios =
+                usuarioService.listarTodos();
 
         return ResponseEntity.ok(usuarios);
     }
 
-    /**
-     * Busca un usuario utilizando su identificador interno.
-     *
-     * Ejemplo:
-     * GET /api/usuarios/5
-     *
-     * El ID corresponde al identificador heredado
-     * de la clase BaseEntity.
-     *
-     * @param id identificador interno del usuario
-     * @return HTTP 200 si el usuario existe
-     *         o HTTP 404 si no fue encontrado
+    /*
+     * Busca un usuario mediante su ID interno.
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Buscar usuario por ID", description = "Consulta un usuario mediante el identificador heredado de BaseEntity")
-    public ResponseEntity<Usuario> buscarPorId(
-            @PathVariable Long id) {
-
+    @Operation(
+            summary = "Buscar usuario por ID",
+            description = "Consulta un usuario mediante su identificador"
+    )
+    public ResponseEntity<UsuarioResponseDTO> buscarPorId(
+            @PathVariable Long id
+    ) {
         return usuarioService.buscarPorId(id)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseGet(() ->
+                        ResponseEntity.notFound().build()
+                );
     }
 
-    /**
+    /*
      * Busca un usuario mediante su número de cédula.
-     *
-     * Ejemplo:
-     * GET /api/usuarios/cedula/123456789
-     *
-     * Esta consulta será especialmente útil para el panel
-     * del propietario, porque el usuario conoce su cédula
-     * pero no necesariamente conoce el ID interno.
-     *
-     * @param cedula número de identificación del usuario
-     * @return HTTP 200 si el usuario existe
-     *         o HTTP 404 si no fue encontrado
      */
     @GetMapping("/cedula/{cedula}")
-    @Operation(summary = "Buscar usuario por cédula", description = "Consulta un usuario utilizando su número de cédula")
-    public ResponseEntity<Usuario> buscarPorCedula(
-            @PathVariable String cedula) {
-
+    @Operation(
+            summary = "Buscar usuario por cédula",
+            description = "Consulta un usuario utilizando su número de cédula"
+    )
+    public ResponseEntity<UsuarioResponseDTO> buscarPorCedula(
+            @PathVariable String cedula
+    ) {
         return usuarioService.buscarPorCedula(cedula)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseGet(() ->
+                        ResponseEntity.notFound().build()
+                );
     }
 
-    /**
+    /*
      * Busca un usuario mediante su correo electrónico.
-     *
-     * Ejemplo:
-     * GET /api/usuarios/correo/usuario@correo.com
-     *
-     * @param correoElectronico correo que se desea consultar
-     * @return HTTP 200 si el usuario existe
-     *         o HTTP 404 si no fue encontrado
      */
     @GetMapping("/correo/{correoElectronico}")
-    @Operation(summary = "Buscar usuario por correo electrónico", description = "Consulta un usuario mediante su correo electrónico")
-    public ResponseEntity<Usuario> buscarPorCorreoElectronico(
-            @PathVariable String correoElectronico) {
-
+    @Operation(
+            summary = "Buscar usuario por correo electrónico",
+            description = "Consulta un usuario utilizando su correo electrónico"
+    )
+    public ResponseEntity<UsuarioResponseDTO>
+    buscarPorCorreoElectronico(
+            @PathVariable String correoElectronico
+    ) {
         return usuarioService
                 .buscarPorCorreoElectronico(
-                        correoElectronico)
+                        correoElectronico
+                )
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseGet(() ->
+                        ResponseEntity.notFound().build()
+                );
     }
 
-    /**
-     * Registra un usuario nuevo.
-     *
-     * Ruta:
-     * POST /api/usuarios
-     *
-     * La anotación @RequestBody convierte el JSON recibido
-     * en un objeto de tipo Usuario.
-     *
-     * UsuarioService valida que la cédula y el correo
-     * electrónico no estén registrados previamente.
-     *
-     * @param usuario datos del usuario que será registrado
-     * @return HTTP 201 con la información del usuario creado
+    /*
+     * Registra un usuario utilizando UsuarioRequestDTO.
      */
     @PostMapping
-    @Operation(summary = "Registrar un usuario", description = "Crea un usuario validando que la cédula y el correo no estén registrados")
-    public ResponseEntity<Usuario> registrar(
-            @RequestBody Usuario usuario) {
-
-        Usuario usuarioRegistrado = usuarioService.registrar(usuario);
+    @Operation(
+            summary = "Registrar un usuario",
+            description = "Crea un usuario validando que la cédula y el correo no estén registrados"
+    )
+    public ResponseEntity<UsuarioResponseDTO> registrar(
+            @RequestBody UsuarioRequestDTO dto
+    ) {
+        UsuarioResponseDTO usuarioRegistrado =
+                usuarioService.registrar(dto);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(usuarioRegistrado);
     }
 
-    /**
-     * Actualiza la información de un usuario existente.
-     *
-     * Ruta:
-     * PUT /api/usuarios/{id}
-     *
-     * El ID se recibe desde la URL.
-     * Los datos actualizados se reciben dentro del cuerpo JSON.
-     *
-     * UsuarioService verifica:
-     *
-     * - Que el usuario exista.
-     * - Que la cédula no pertenezca a otro usuario.
-     * - Que el correo no pertenezca a otro usuario.
-     *
-     * @param id      identificador del usuario que se actualizará
-     * @param usuario nuevos datos del usuario
-     * @return HTTP 200 con el usuario actualizado
+    /*
+     * Actualiza un usuario utilizando UsuarioRequestDTO.
      */
     @PutMapping("/{id}")
-    @Operation(summary = "Actualizar un usuario", description = "Actualiza los datos y valida la cédula y el correo electrónico")
-    public ResponseEntity<Usuario> actualizar(
+    @Operation(
+            summary = "Actualizar un usuario",
+            description = "Actualiza los datos y valida la cédula y el correo electrónico"
+    )
+    public ResponseEntity<UsuarioResponseDTO> actualizar(
             @PathVariable Long id,
-            @RequestBody Usuario usuario) {
+            @RequestBody UsuarioRequestDTO dto
+    ) {
+        UsuarioResponseDTO usuarioActualizado =
+                usuarioService.actualizar(id, dto);
 
-        Usuario usuarioActualizado = usuarioService.actualizar(
-                id,
-                usuario);
-
-        return ResponseEntity.ok(
-                usuarioActualizado);
+        return ResponseEntity.ok(usuarioActualizado);
     }
 
-    /**
-     * Elimina un usuario mediante su identificador interno.
-     *
-     * Ruta:
-     * DELETE /api/usuarios/{id}
-     *
-     * UsuarioService verifica primero que el usuario exista.
-     *
-     * @param id identificador del usuario que se eliminará
-     * @return HTTP 204 cuando la eliminación sea exitosa
+    /*
+     * Elimina un usuario por su ID.
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Eliminar un usuario", description = "Elimina un usuario mediante su identificador interno")
+    @Operation(
+            summary = "Eliminar un usuario",
+            description = "Elimina un usuario mediante su identificador interno"
+    )
     public ResponseEntity<Void> eliminar(
-            @PathVariable Long id) {
-
+            @PathVariable Long id
+    ) {
         usuarioService.eliminar(id);
 
         return ResponseEntity

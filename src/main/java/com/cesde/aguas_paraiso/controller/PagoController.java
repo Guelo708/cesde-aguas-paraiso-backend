@@ -1,9 +1,12 @@
 package com.cesde.aguas_paraiso.controller;
 
-import com.cesde.aguas_paraiso.model.entity.Pago;
+import com.cesde.aguas_paraiso.dto.PagoRequestDTO;
+import com.cesde.aguas_paraiso.dto.PagoResponseDTO;
 import com.cesde.aguas_paraiso.service.PagoService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,53 +23,106 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Controlador REST encargado de recibir las solicitudes HTTP
+ * relacionadas con los pagos de Aguas Paraíso.
+ *
+ * Este controlador utiliza:
+ *
+ * - PagoRequestDTO para recibir los datos de un nuevo pago.
+ * - PagoResponseDTO para entregar las respuestas públicas.
+ *
+ * La lógica financiera permanece en PagoService, incluyendo:
+ *
+ * - Validación de la factura.
+ * - Validación del valor y la fecha del pago.
+ * - Control del saldo pendiente.
+ * - Actualización del estado de la factura.
+ * - Reajuste del estado cuando se elimina un pago.
+ */
 @RestController
 @RequestMapping("/api/pagos")
 @Tag(
         name = "7. Pagos",
-        description = "Registro, consultas y calculos relacionados con pagos"
+        description = "Registro, consultas y cálculos relacionados con pagos"
 )
 public class PagoController {
 
+    /**
+     * Servicio que contiene la lógica de negocio
+     * relacionada con pagos y saldos.
+     */
     private final PagoService pagoService;
 
+    /**
+     * Constructor utilizado por Spring para inyectar PagoService.
+     *
+     * @param pagoService servicio encargado de gestionar pagos
+     */
     public PagoController(
             PagoService pagoService
     ) {
         this.pagoService = pagoService;
     }
 
-    // Lista todos los pagos registrados.
+    /**
+     * Lista todos los pagos registrados.
+     *
+     * Ruta:
+     * GET /api/pagos
+     *
+     * @return HTTP 200 con la lista de PagoResponseDTO
+     */
     @GetMapping
     @Operation(
             summary = "Listar todos los pagos",
             description = "Consulta todos los pagos registrados"
     )
-    public ResponseEntity<List<Pago>> listarTodos() {
-        return ResponseEntity.ok(pagoService.listarTodos());
+    public ResponseEntity<List<PagoResponseDTO>> listarTodos() {
+        return ResponseEntity.ok(
+                pagoService.listarTodos()
+        );
     }
 
-    // Busca un pago por su identificador.
+    /**
+     * Busca un pago mediante su identificador interno.
+     *
+     * Ruta:
+     * GET /api/pagos/{id}
+     *
+     * @param id identificador del pago
+     * @return HTTP 200 con el pago o HTTP 404 si no existe
+     */
     @GetMapping("/{id}")
     @Operation(
             summary = "Buscar pago por ID",
             description = "Consulta un pago mediante su identificador"
     )
-    public ResponseEntity<Pago> buscarPorId(
+    public ResponseEntity<PagoResponseDTO> buscarPorId(
             @PathVariable Long id
     ) {
         return pagoService.buscarPorId(id)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseGet(() ->
+                        ResponseEntity.notFound().build()
+                );
     }
 
-    // Lista los pagos asociados a una factura.
+    /**
+     * Lista los pagos asociados a una factura.
+     *
+     * Ruta:
+     * GET /api/pagos/factura/{facturaId}
+     *
+     * @param facturaId identificador de la factura
+     * @return HTTP 200 con los pagos de la factura
+     */
     @GetMapping("/factura/{facturaId}")
     @Operation(
             summary = "Buscar pagos por factura",
             description = "Consulta los pagos asociados a una factura"
     )
-    public ResponseEntity<List<Pago>> buscarPorFactura(
+    public ResponseEntity<List<PagoResponseDTO>> buscarPorFactura(
             @PathVariable Long facturaId
     ) {
         return ResponseEntity.ok(
@@ -74,13 +130,22 @@ public class PagoController {
         );
     }
 
-    // Lista los pagos asociados a los predios de un usuario.
+    /**
+     * Lista los pagos asociados a las facturas
+     * pertenecientes a los predios de un usuario.
+     *
+     * Ruta:
+     * GET /api/pagos/usuario/{usuarioId}
+     *
+     * @param usuarioId identificador del usuario
+     * @return HTTP 200 con los pagos asociados al usuario
+     */
     @GetMapping("/usuario/{usuarioId}")
     @Operation(
             summary = "Buscar pagos por usuario",
             description = "Consulta los pagos asociados a un usuario"
     )
-    public ResponseEntity<List<Pago>> buscarPorUsuario(
+    public ResponseEntity<List<PagoResponseDTO>> buscarPorUsuario(
             @PathVariable Long usuarioId
     ) {
         return ResponseEntity.ok(
@@ -88,13 +153,21 @@ public class PagoController {
         );
     }
 
-    // Lista los pagos asociados a una cedula.
+    /**
+     * Lista los pagos asociados a una cédula.
+     *
+     * Ruta:
+     * GET /api/pagos/cedula/{cedula}
+     *
+     * @param cedula cédula histórica del propietario
+     * @return HTTP 200 con los pagos encontrados
+     */
     @GetMapping("/cedula/{cedula}")
     @Operation(
-            summary = "Buscar pagos por cedula",
-            description = "Consulta los pagos asociados a la cedula de un propietario"
+            summary = "Buscar pagos por cédula",
+            description = "Consulta los pagos asociados a la cédula de un propietario"
     )
-    public ResponseEntity<List<Pago>> buscarPorCedula(
+    public ResponseEntity<List<PagoResponseDTO>> buscarPorCedula(
             @PathVariable String cedula
     ) {
         return ResponseEntity.ok(
@@ -102,13 +175,28 @@ public class PagoController {
         );
     }
 
-    // Busca pagos por cedula dentro de un rango de fechas.
+    /**
+     * Busca pagos por cédula dentro de un rango de fechas.
+     *
+     * Las fechas deben enviarse con formato AAAA-MM-DD.
+     *
+     * Ejemplo:
+     * GET /api/pagos/cedula/1037654321/rango
+     *     ?fechaInicial=2026-01-01
+     *     &fechaFinal=2026-12-31
+     *
+     * @param cedula cédula del propietario
+     * @param fechaInicial fecha inicial inclusiva
+     * @param fechaFinal fecha final inclusiva
+     * @return HTTP 200 con los pagos encontrados
+     */
     @GetMapping("/cedula/{cedula}/rango")
     @Operation(
-            summary = "Buscar pagos por cedula y rango",
-            description = "Consulta pagos por cedula y rango de fechas"
+            summary = "Buscar pagos por cédula y rango",
+            description = "Consulta pagos por cédula y rango de fechas"
     )
-    public ResponseEntity<List<Pago>> buscarPorCedulaYRango(
+    public ResponseEntity<List<PagoResponseDTO>>
+    buscarPorCedulaYRango(
             @PathVariable String cedula,
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -126,11 +214,19 @@ public class PagoController {
         );
     }
 
-    // Calcula el total pagado por una cedula.
+    /**
+     * Calcula el total pagado asociado a una cédula.
+     *
+     * Ruta:
+     * GET /api/pagos/cedula/{cedula}/total
+     *
+     * @param cedula cédula del propietario
+     * @return HTTP 200 con el total pagado
+     */
     @GetMapping("/cedula/{cedula}/total")
     @Operation(
-            summary = "Calcular total pagado por cedula",
-            description = "Suma todos los pagos asociados a una cedula"
+            summary = "Calcular total pagado por cédula",
+            description = "Suma todos los pagos asociados a una cédula"
     )
     public ResponseEntity<BigDecimal> calcularTotalPorCedula(
             @PathVariable String cedula
@@ -140,7 +236,15 @@ public class PagoController {
         );
     }
 
-    // Calcula el total pagado de una factura.
+    /**
+     * Calcula el total pagado para una factura.
+     *
+     * Ruta:
+     * GET /api/pagos/factura/{facturaId}/total
+     *
+     * @param facturaId identificador de la factura
+     * @return HTTP 200 con la suma de sus pagos
+     */
     @GetMapping("/factura/{facturaId}/total")
     @Operation(
             summary = "Calcular total pagado por factura",
@@ -150,11 +254,23 @@ public class PagoController {
             @PathVariable Long facturaId
     ) {
         return ResponseEntity.ok(
-                pagoService.calcularTotalPagadoPorFactura(facturaId)
+                pagoService.calcularTotalPagadoPorFactura(
+                        facturaId
+                )
         );
     }
 
-    // Calcula el saldo pendiente de una factura.
+    /**
+     * Calcula el saldo pendiente de una factura.
+     *
+     * Saldo pendiente = valor de la factura - total pagado.
+     *
+     * Ruta:
+     * GET /api/pagos/factura/{facturaId}/saldo
+     *
+     * @param facturaId identificador de la factura
+     * @return HTTP 200 con el saldo pendiente
+     */
     @GetMapping("/factura/{facturaId}/saldo")
     @Operation(
             summary = "Calcular saldo pendiente",
@@ -168,7 +284,15 @@ public class PagoController {
         );
     }
 
-    // Calcula el total pagado por un usuario.
+    /**
+     * Calcula el total pagado asociado a un usuario.
+     *
+     * Ruta:
+     * GET /api/pagos/usuario/{usuarioId}/total
+     *
+     * @param usuarioId identificador del usuario
+     * @return HTTP 200 con el total pagado
+     */
     @GetMapping("/usuario/{usuarioId}/total")
     @Operation(
             summary = "Calcular total pagado por usuario",
@@ -178,27 +302,59 @@ public class PagoController {
             @PathVariable Long usuarioId
     ) {
         return ResponseEntity.ok(
-                pagoService.calcularTotalPagadoPorUsuario(usuarioId)
+                pagoService.calcularTotalPagadoPorUsuario(
+                        usuarioId
+                )
         );
     }
 
-    // Registra un nuevo pago y recalcula el estado de la factura.
+    /**
+     * Registra un nuevo pago mediante PagoRequestDTO.
+     *
+     * Ruta:
+     * POST /api/pagos
+     *
+     * Ejemplo de cuerpo JSON:
+     * {
+     *   "facturaId": 1,
+     *   "valorPagado": 25000.00,
+     *   "fechaPago": "2026-11-02",
+     *   "metodoPago": "TRANSFERENCIA",
+     *   "observacion": "Abono realizado por el propietario"
+     * }
+     *
+     * PagoService valida el saldo pendiente y actualiza
+     * automáticamente el estado de la factura.
+     *
+     * @param dto datos necesarios para registrar el pago
+     * @return HTTP 201 con el PagoResponseDTO creado
+     */
     @PostMapping
     @Operation(
             summary = "Registrar un pago",
             description = "Registra un pago y actualiza el estado de la factura"
     )
-    public ResponseEntity<Pago> registrar(
-            @RequestBody Pago pago
+    public ResponseEntity<PagoResponseDTO> registrar(
+            @RequestBody PagoRequestDTO dto
     ) {
-        Pago pagoRegistrado = pagoService.registrar(pago);
+        PagoResponseDTO pagoRegistrado =
+                pagoService.registrar(dto);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(pagoRegistrado);
     }
 
-    // Elimina un pago y recalcula el estado de la factura.
+    /**
+     * Elimina un pago y solicita al servicio recalcular
+     * el estado de la factura relacionada.
+     *
+     * Ruta:
+     * DELETE /api/pagos/{id}
+     *
+     * @param id identificador del pago que se eliminará
+     * @return HTTP 204 cuando la eliminación sea correcta
+     */
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Eliminar un pago",

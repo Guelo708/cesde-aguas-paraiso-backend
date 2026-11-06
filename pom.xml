@@ -38,10 +38,18 @@
     Genera la documentación OpenAPI y habilita Swagger UI.
     También permite usar las anotaciones @Tag y @Operation.
 -->
+<!-- OpenAPI + Swagger UI -->
 <dependency>
     <groupId>org.springdoc</groupId>
     <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-    <version>3.1.1</version>
+    <version>3.2.0</version>
+</dependency>
+
+<!-- Interfaz Scalar -->
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-scalar</artifactId>
+    <version>3.2.0</version>
 </dependency>
 
 <!-- Controlador JDBC para PostgreSQL -->
