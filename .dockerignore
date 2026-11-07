@@ -1,0 +1,10 @@
+target/
+.git/
+.gitignore
+.gitattributes
+.env
+.vscode/
+.idea/
+frontend/
+*.md
+postman_collection.json
